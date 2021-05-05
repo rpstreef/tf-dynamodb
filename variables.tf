@@ -46,7 +46,10 @@ variable "range_key_type" {
 }
 
 variable "attributes" {
-  type        = list(string)
+  type = list(object({
+    name = string
+    type = string
+  }))
   default     = []
   description = "Additional DynamoDB attributes in the form of a list of mapped values"
 }
