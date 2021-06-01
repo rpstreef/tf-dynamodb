@@ -54,7 +54,7 @@ resource "aws_dynamodb_table" "_" {
   }
 
   dynamic "attribute" {
-    for_each = var.dynamodb_attributes
+    for_each = var.dynamodb_attributes_map
 
     content {
       name = attribute.value.name

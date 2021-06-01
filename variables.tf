@@ -51,7 +51,7 @@ variable "dynamodb_range_key_type" {
   description = "Range Key type, which must be a scalar type: `S`, `N`, or `B` for (S)tring, (N)umber or (B)inary data"
 }
 
-variable "dynamodb_attributes" {
+variable "dynamodb_attributes_map" {
   type = list(object({
     name = string
     type = string
