@@ -2,7 +2,8 @@ data "aws_caller_identity" "_" {}
 
 locals {
   table_name           = "${local.resource_name_prefix}-${var.dynamodb_table_name}"
-  resource_name_prefix = "${var.namespace}-${var.resource_tag_name}"
+  resource_name_prefix = "${var.environment}-${var.resource_tag_name}"
+
   table_arn = "arn:aws:dynamodb:${
     var.region
     }:${
@@ -10,43 +11,50 @@ locals {
     }:table/${
     local.table_name
   }"
+
+  tags = {
+    Name        = var.resource_tag_name
+    Environment = var.environment
+  }
 }
 
 resource "null_resource" "global_secondary_index_names" {
-  count = length(var.global_secondary_index_map)
+  count = length(var.dynamodb_global_secondary_index_map)
 
   triggers = {
-    "name" = var.global_secondary_index_map[count.index]["name"]
+    "name" = var.dynamodb_global_secondary_index_map[count.index]["name"]
   }
 }
 
 resource "null_resource" "local_secondary_index_names" {
-  count = length(var.local_secondary_index_map)
+  count = length(var.dynamodb_local_secondary_index_map)
 
   triggers = {
-    "name" = var.local_secondary_index_map[count.index]["name"]
+    "name" = var.dynamodb_local_secondary_index_map[count.index]["name"]
   }
 }
 
 resource "aws_dynamodb_table" "_" {
-  name         = local.table_name
-  billing_mode = var.billing_mode
-  hash_key     = var.hash_key
-  range_key    = var.range_key
+  count = var.dynamodb_module_enabled ? 1 : 0
 
-  stream_enabled   = var.stream_enabled
-  stream_view_type = var.stream_view_type
+  name         = local.table_name
+  billing_mode = var.dynamodb_billing_mode
+  hash_key     = var.dynamodb_hash_key
+  range_key    = var.dynamodb_range_key
+
+  stream_enabled   = var.dynamodb_stream_enabled
+  stream_view_type = var.dynamodb_stream_view_type
 
   server_side_encryption {
-    enabled = var.server_side_encryption
+    enabled = var.dynamodb_server_side_encryption
   }
 
   point_in_time_recovery {
-    enabled = var.point_in_time_recovery
+    enabled = var.dynamodb_point_in_time_recovery
   }
 
   dynamic "attribute" {
-    for_each = var.attributes
+    for_each = var.dynamodb_attributes
 
     content {
       name = attribute.value.name
@@ -55,7 +63,7 @@ resource "aws_dynamodb_table" "_" {
   }
 
   dynamic "global_secondary_index" {
-    for_each = var.global_secondary_index_map
+    for_each = var.dynamodb_global_secondary_index_map
 
     content {
       hash_key           = global_secondary_index.value.hash_key
@@ -69,7 +77,7 @@ resource "aws_dynamodb_table" "_" {
   }
 
   dynamic "local_secondary_index" {
-    for_each = var.local_secondary_index_map
+    for_each = var.dynamodb_local_secondary_index_map
     content {
       name               = local_secondary_index.value.name
       non_key_attributes = lookup(local_secondary_index.value, "non_key_attributes", null)
@@ -87,8 +95,5 @@ resource "aws_dynamodb_table" "_" {
     ]
   }
 
-  tags = {
-    Name        = var.resource_tag_name
-    Environment = var.namespace
-  }
+  tags = local.tags
 }
