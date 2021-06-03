@@ -58,6 +58,10 @@ module "dynamodb" {
 
 ## Changelog
 
+### v1.1
+- Added module on/off switch ``dynamodb_module_enabled``
+- Added full dynamodb output object
+
 ### v1.0
 
 Initial release

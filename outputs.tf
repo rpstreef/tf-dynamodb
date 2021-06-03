@@ -6,7 +6,7 @@ locals {
 # Outputs: Cognito
 # -----------------------------------------------------------------------------
 
-output "user_pool" {
+output "dynamodb_table" {
   description = "The full `aws_dynamodb_table` object."
   value       = local.o_dynamodb_table
 }
